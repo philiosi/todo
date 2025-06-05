@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>8-Person Todo List</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+      background-color: #f0f0f0;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+    .date-navigation {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      width: 100%;
+      background: linear-gradient(to bottom, #f0f2f5 80%, transparent);
+      padding: 20px 0;
+      text-align: center;
+    }
+    .date-picker {
+      background: white;
+      padding: 12px 25px;
+      border-radius: 15px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+      display: inline-flex;
+      align-items: center;
+      gap: 20px;
+    }
+    .date-select {
+      display: flex;
+      align-items: center;
+    }
+    .date-picker label {
+      font-size: 0.9rem;
+      color: #172B4D;
+      font-weight: 500;
+    }
+    .date-picker input[type="date"] {
+      border: 2px solid #E3E3E3;
+      border-radius: 8px;
+      padding: 8px 12px;
+      font-size: 1rem;
+      color: #172B4D;
+      background-color: #fff;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-align: center;
+      min-width: 150px;
+    }
+    .date-picker input[type="date"]:hover {
+      border-color: #026AA7;
+    }
+    .date-picker input[type="date"]:focus {
+      outline: none;
+      border-color: #026AA7;
+      box-shadow: 0 0 0 2px rgba(2,106,167,0.2);
+    }
+    .date-nav-btn {
+      background: none;
+      border: none;
+      font-size: 1.2rem;
+      color: #026AA7;
+      cursor: pointer;
+      padding: 10px;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+    }
+    .date-nav-btn:hover {
+      background-color: rgba(2,106,167,0.1);
+      transform: scale(1.1);
+    }
+    .card {
+      flex: 0 0 300px;
+      width: 300px;
+      min-width: 300px;
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      margin: 0;
+      padding: 20px;
+      background-color: #ffffff;
+      max-height: 100%;
+      overflow-y: auto;
+    }
+    .card-header {
+      font-weight: bold;
+      font-size: 1.2em;
+      margin-bottom: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .edit-name {
+      border: none;
+      background: none;
+      cursor: pointer;
+      font-size: 0.9em;
+      color: #007BFF;
+    }
+    .list-header {
+      font-weight: bold;
+      margin-top: 10px;
+    }
+    .card-content {
+      list-style-type: none;
+      padding: 0;
+      margin: 0;
+    }
+    .card-content li {
+      margin: 10px 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .card-content li button {
+      border: none;
+      background: none;
+      color: red;
+      cursor: pointer;
+      font-size: 1.2em;
+    }
+    .card-content li.completed {
+      text-decoration: line-through;
+      color: gray;
+    }
+    .add-task {
+      margin-top: 15px;
+      display: flex;
+      flex-wrap: nowrap;
+    }
+    .add-task input {
+      flex-grow: 1;
+      padding: 5px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      width: 0;
+    }
+    .add-task button {
+      border: none;
+      background: #4CAF50;
+      color: #fff;
+      padding: 5px 10px;
+      border-radius: 4px;
+      cursor: pointer;
+      margin-left: 5px;
+      flex-shrink: 0;
+    }
+    .card:nth-child(1) { background-color: #FFEBEE; }
+    .card:nth-child(2) { background-color: #FFF3E0; }
+    .card:nth-child(3) { background-color: #E8F5E9; }
+    .card:nth-child(4) { background-color: #E3F2FD; }
+    .card:nth-child(5) { background-color: #F3E5F5; }
+    .card:nth-child(6) { background-color: #FFCDD2; }
+    .card:nth-child(7) { background-color: #FFECB3; }
+    .card:nth-child(8) { background-color: #D1C4E9; }
+    .time-section {
+      margin: 15px 0;
+      padding: 10px;
+      background-color: rgba(255, 255, 255, 0.7);
+      border-radius: 8px;
+    }
+    .time-header {
+      font-weight: bold;
+      margin-bottom: 10px;
+      color: #333;
+      font-size: 1.1em;
+      padding-bottom: 5px;
+      border-bottom: 2px solid rgba(0, 0, 0, 0.1);
+    }
+    .morning-list, .afternoon-list {
+      min-height: 50px;
+    }
+    .card-content {
+      list-style-type: none;
+      padding: 0;
+      margin: 0;
+    }
+    .card-content li {
+      background-color: white;
+      margin: 8px 0;
+      padding: 8px 12px;
+      border-radius: 4px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .add-task {
+      margin-top: 10px;
+      display: flex;
+      gap: 8px;
+    }
+    .add-task input {
+      flex-grow: 1;
+      padding: 8px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+    }
+    .add-task button {
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      padding: 8px 15px;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+    .add-task button:hover {
+      background-color: #45a049;
+    }
+    .cards-wrapper {
+      display: flex;
+      flex-wrap: nowrap;
+      overflow-x: auto;
+      padding: 20px;
+      gap: 20px;
+      -webkit-overflow-scrolling: touch;
+      height: calc(100vh - 80px);
+    }
+    /* 카드 내부 스크롤을 위한 스타일 추가 */
+    .card {
+      flex: 0 0 300px;
+      width: 300px;
+      min-width: 300px;
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      margin: 0;
+      padding: 20px;
+      background-color: #ffffff;
+      max-height: 100%;
+      overflow-y: auto;
+    }
+    /* 카드 내부 스크롤바 스타일링 */
+    .card::-webkit-scrollbar {
+      width: 8px;
+    }
+    .card::-webkit-scrollbar-track {
+      background: #f1f1f1;
+      border-radius: 4px;
+    }
+    .card::-webkit-scrollbar-thumb {
+      background: #888;
+      border-radius: 4px;
+    }
+    .card::-webkit-scrollbar-thumb:hover {
+      background: #555;
+    }
+  </style>
+</head>
+<body>
+
+<div class="date-navigation">
+  <div class="date-picker">
+    <button class="date-nav-btn" onclick="changeDate(-1)">◀</button>
+    <div class="date-select">
+      <input type="date" id="task-date" onchange="updateDate()">
+    </div>
+    <button class="date-nav-btn" onclick="changeDate(1)">▶</button>
+  </div>
+</div>
+
+<div class="cards-wrapper"></div>
+
+<script>
+  // 현재 날짜로 초기화
+  window.onload = function() {
+    const today = new Date();
+    const dateInput = document.getElementById('task-date');
+    dateInput.value = today.toISOString().split('T')[0];
+
+    // 카드 생성
+    for (let i = 1; i <= 8; i++) {
+      createCard(i);
+    }
+  };
+
+  // 날짜 변경 함수
+  function changeDate(days) {
+    const dateInput = document.getElementById('task-date');
+    const currentDate = new Date(dateInput.value);
+    currentDate.setDate(currentDate.getDate() + days);
+    dateInput.value = currentDate.toISOString().split('T')[0];
+    updateDate(); // 기존 updateDate 함수 호출
+  }
+
+  // 날짜 업데이트 함수 (기존 함수를 수정하거나 새로 만드세요)
+  function updateDate() {
+    const dateInput = document.getElementById('task-date');
+    const selectedDate = dateInput.value;
+    // 여기에 날짜 변경 시 필요한 로직을 추가하세요
+    console.log('Selected date:', selectedDate);
+  }
+
+  function createCard(userNumber) {
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.id = `user-${userNumber}`;
+
+    // 헤더 부분
+    const header = document.createElement('div');
+    header.className = 'card-header';
+
+    const headerText = document.createElement('span');
+    headerText.innerText = `User ${userNumber}`;
+    headerText.contentEditable = false;
+    headerText.className = 'user-name';
+
+    const editButton = document.createElement('button');
+    editButton.className = 'edit-name';
+    editButton.innerText = 'Edit';
+    editButton.onclick = function () {
+        if (headerText.isContentEditable) {
+            headerText.contentEditable = false;
+            editButton.innerText = 'Edit';
+        } else {
+            headerText.contentEditable = true;
+            headerText.focus();
+            editButton.innerText = 'Save';
+        }
+    };
+
+    header.appendChild(headerText);
+    header.appendChild(editButton);
+    card.appendChild(header);
+
+    // 오전 섹션
+    const morningSection = document.createElement('div');
+    morningSection.className = 'time-section';
+    
+    const morningHeader = document.createElement('div');
+    morningHeader.className = 'time-header';
+    morningHeader.innerText = '오전';
+    
+    const morningList = document.createElement('ul');
+    morningList.className = 'card-content morning-list';
+    
+    const morningAddTask = document.createElement('div');
+    morningAddTask.className = 'add-task';
+    
+    const morningInput = document.createElement('input');
+    morningInput.type = 'text';
+    morningInput.placeholder = '오전 할일 추가';
+    
+    const morningAddButton = document.createElement('button');
+    morningAddButton.innerText = '추가';
+    morningAddButton.onclick = function() {
+        addTask(morningInput, morningList, 'morning', userNumber);
+    };
+
+    // 엔터 키 이벤트 추가
+    morningInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            addTask(morningInput, morningList, 'morning', userNumber);
+        }
+    });
+
+    morningAddTask.appendChild(morningInput);
+    morningAddTask.appendChild(morningAddButton);
+    morningSection.appendChild(morningHeader);
+    morningSection.appendChild(morningList);
+    morningSection.appendChild(morningAddTask);
+
+    // 오후 섹션
+    const afternoonSection = document.createElement('div');
+    afternoonSection.className = 'time-section';
+    
+    const afternoonHeader = document.createElement('div');
+    afternoonHeader.className = 'time-header';
+    afternoonHeader.innerText = '오후';
+    
+    const afternoonList = document.createElement('ul');
+    afternoonList.className = 'card-content afternoon-list';
+    
+    const afternoonAddTask = document.createElement('div');
+    afternoonAddTask.className = 'add-task';
+    
+    const afternoonInput = document.createElement('input');
+    afternoonInput.type = 'text';
+    afternoonInput.placeholder = '오후 할일 추가';
+    
+    const afternoonAddButton = document.createElement('button');
+    afternoonAddButton.innerText = '추가';
+    afternoonAddButton.onclick = function() {
+        addTask(afternoonInput, afternoonList, 'afternoon', userNumber);
+    };
+
+    // 엔터 키 이벤트 추가
+    afternoonInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            addTask(afternoonInput, afternoonList, 'afternoon', userNumber);
+        }
+    });
+
+    afternoonAddTask.appendChild(afternoonInput);
+    afternoonAddTask.appendChild(afternoonAddButton);
+    afternoonSection.appendChild(afternoonHeader);
+    afternoonSection.appendChild(afternoonList);
+    afternoonSection.appendChild(afternoonAddTask);
+
+    card.appendChild(morningSection);
+    card.appendChild(afternoonSection);
+
+    document.querySelector('.cards-wrapper').appendChild(card);
+  }
+
+  // 할일 추가 함수 수정
+  function addTask(input, list, period, userId) {
+    const taskText = input.value.trim();
+    
+    if (!taskText) {
+        alert('할일을 입력해주세요');
+        return;
+    }
+
+    // 새로운 할일 아이템 생성
+    const taskItem = document.createElement('li');
+    taskItem.className = 'task-item';
+    
+    // 할일 내용
+    const taskContent = document.createElement('span');
+    taskContent.textContent = taskText;
+    
+    // 삭제 버튼
+    const deleteButton = document.createElement('button');
+    deleteButton.innerHTML = '×';
+    deleteButton.className = 'delete-btn';
+    deleteButton.onclick = function(e) {
+        e.stopPropagation();
+        taskItem.remove();
+    };
+    
+    // 완료 토글
+    taskItem.onclick = function() {
+        taskItem.classList.toggle('completed');
+    };
+    
+    // 요소들 조립
+    taskItem.appendChild(taskContent);
+    taskItem.appendChild(deleteButton);
+    list.appendChild(taskItem);
+    
+    // 입력창 초기화
+    input.value = '';
+    
+    // 입력창에 포커스
+    input.focus();
+  }
+</script>
+
+</body>
+</html>
