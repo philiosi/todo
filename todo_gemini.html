@@ -6,6 +6,8 @@
     <title>팀 Todo 리스트</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- SortableJS 라이브러리 추가 -->
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
     <style>
         body {
             font-family: 'Inter', sans-serif;
@@ -46,6 +48,14 @@
         .user-name-header {
             cursor: pointer;
         }
+        /* 드래그 중인 카드 스타일 */
+        .sortable-ghost {
+            opacity: 0.4;
+            background-color: #c7d2fe;
+        }
+        .sortable-drag {
+            cursor: grabbing;
+        }
     </style>
 </head>
 <body class="text-gray-800">
@@ -53,9 +63,11 @@
     <div class="container mx-auto px-4 py-8">
 
         <!-- 헤더: 타이틀 및 날짜 선택 -->
-        <header class="text-center mb-8">
-            <h1 class="text-4xl md:text-5xl font-bold text-gray-700">팀 위클리 플래너</h1>
-            <p class="text-gray-500 mt-2">날짜를 선택하여 팀원의 할 일을 확인하세요.</p>
+        <header class="mb-8">
+            <div class="text-center py-4">
+                <h1 class="text-4xl md:text-5xl font-bold text-gray-700">IPPA 플래너</h1>
+                <p class="text-gray-500 mt-2">날짜를 선택하여 할 일을 확인하세요.</p>
+            </div>
             <div class="mt-6 flex items-center justify-center gap-2">
                 <button id="prev-day-btn" class="p-2 rounded-full hover:bg-gray-200 transition-colors" aria-label="이전 날짜">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -69,6 +81,11 @@
                 <button id="next-day-btn" class="p-2 rounded-full hover:bg-gray-200 transition-colors" aria-label="다음 날짜">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+                    </svg>
+                </button>
+                <button id="manage-user-btn" class="p-2 rounded-full hover:bg-gray-200 transition-colors ml-2" aria-label="사용자 관리">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-600" viewBox="0 0 20 20" fill="currentColor">
+                      <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z" />
                     </svg>
                 </button>
             </div>
@@ -201,6 +218,7 @@
         const addUserForm = document.getElementById('add-user-form');
         const newUserNameInput = document.getElementById('new-user-name-input');
         const manageUserCloseBtn = document.getElementById('manage-user-close-btn');
+        const manageUserBtn = document.getElementById('manage-user-btn');
 
         const recurringModal = document.getElementById('recurring-modal');
         const dayCheckboxesContainer = document.getElementById('day-checkboxes');
@@ -236,12 +254,13 @@
             userLanesContainer.innerHTML = '';
             const displayTodos = getTodosForDate(selectedDate);
             activeUsers.forEach(user => userLanesContainer.appendChild(createUserLane(user, selectedDate, displayTodos)));
-            userLanesContainer.appendChild(createAddUserLane());
         }
         
         function createUserLane(user, selectedDate, displayTodos) {
             const lane = document.createElement('div');
             lane.className = 'flex-shrink-0 w-80 bg-gray-100 rounded-xl p-4';
+            lane.dataset.userId = user.id; // 드래그를 위해 사용자 ID 추가
+            
             const userHeaderContainer = document.createElement('div');
             userHeaderContainer.className = 'relative flex items-center justify-center mb-4 group';
             const userHeader = document.createElement('h2');
@@ -268,17 +287,6 @@
             lane.appendChild(createPeriodSection('오전', 'am', user.name, selectedDate, displayTodos[user.name]?.am || []));
             lane.appendChild(createPeriodSection('오후', 'pm', user.name, selectedDate, displayTodos[user.name]?.pm || []));
             return lane;
-        }
-
-        function createAddUserLane() {
-            const addUserLane = document.createElement('div');
-            addUserLane.className = 'flex-shrink-0 w-80 flex items-center justify-center';
-            const addUserButton = document.createElement('button');
-            addUserButton.className = 'w-full h-full bg-gray-200 text-gray-500 hover:bg-indigo-100 hover:text-indigo-600 rounded-xl transition flex items-center justify-center p-4';
-            addUserButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" /></svg><span>사용자 관리</span>`;
-            addUserButton.onclick = openManageUserModal;
-            addUserLane.appendChild(addUserButton);
-            return addUserLane;
         }
         
         function getTodosForDate(selectedDate) {
@@ -371,8 +379,17 @@
 
         // --- 데이터 조작 함수 ---
         async function createNewUser(name) {
-            const newUserRef = doc(collection(db, "users"));
-            await setDoc(newUserRef, { id: newUserRef.id, name, order: activeUsers.length + inactiveUsers.length, isActive: true });
+            const usersCollectionRef = collection(db, "users");
+            const snapshot = await getDocs(usersCollectionRef);
+            const newOrder = snapshot.size;
+
+            const newUserRef = doc(usersCollectionRef);
+            await setDoc(newUserRef, {
+                id: newUserRef.id,
+                name: name,
+                order: newOrder,
+                isActive: true
+            });
         }
         async function deactivateUser(user) { await updateDoc(doc(db, "users", user.id), { isActive: false }); }
         async function restoreUser(userId) { await updateDoc(doc(db, "users", userId), { isActive: true }); }
@@ -528,6 +545,7 @@
             }
         });
         manageUserCloseBtn.addEventListener('click', closeManageUserModal);
+        manageUserBtn.addEventListener('click', openManageUserModal);
         manageUserModal.addEventListener('click', (e) => { if (e.target === manageUserModal) closeManageUserModal(); });
         
         dayCheckboxesContainer.addEventListener('change', (e) => {
@@ -560,6 +578,22 @@
         async function initialize() {
             const today = new Date();
             datePicker.value = getFormattedDate(today);
+            
+            new Sortable(userLanesContainer, {
+                animation: 150,
+                onEnd: async (evt) => {
+                    const newOrderIds = Array.from(userLanesContainer.children).map(el => el.dataset.userId);
+                    const batch = writeBatch(db);
+                    newOrderIds.forEach((userId, index) => {
+                        if (userId) {
+                            const userRef = doc(db, "users", userId);
+                            batch.update(userRef, { order: index });
+                        }
+                    });
+                    await batch.commit();
+                }
+            });
+
             onSnapshot(query(collection(db, "users"), orderBy("order")), (snapshot) => {
                 const allUsers = snapshot.docs.map(doc => doc.data());
                 activeUsers = allUsers.filter(u => u.isActive);
