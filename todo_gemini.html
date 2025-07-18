@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>팀 Todo 리스트</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f9fafb;
+        }
+        /* 커스텀 스크롤바 */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #d1d5db;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #9ca3af;
+        }
+        .task-card-enter {
+            animation: card-enter 0.4s ease-out;
+        }
+        @keyframes card-enter {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        /* 모달 배경 */
+        .modal-overlay {
+            transition: opacity 0.3s ease;
+        }
+        .user-name-header {
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body class="text-gray-800">
+
+    <div class="container mx-auto px-4 py-8">
+
+        <!-- 헤더: 타이틀 및 날짜 선택 -->
+        <header class="text-center mb-8">
+            <h1 class="text-4xl md:text-5xl font-bold text-gray-700">팀 위클리 플래너</h1>
+            <p class="text-gray-500 mt-2">날짜를 선택하여 팀원의 할 일을 확인하세요.</p>
+            <div class="mt-6 flex items-center justify-center gap-2">
+                <button id="prev-day-btn" class="p-2 rounded-full hover:bg-gray-200 transition-colors" aria-label="이전 날짜">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+                    </svg>
+                </button>
+                <div class="flex items-center gap-2">
+                    <input type="date" id="date-picker" class="w-48 p-2 border-2 border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 text-center font-semibold text-lg">
+                    <span id="day-of-week" class="w-12 text-center text-xl font-bold text-gray-700"></span>
+                </div>
+                <button id="next-day-btn" class="p-2 rounded-full hover:bg-gray-200 transition-colors" aria-label="다음 날짜">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+                    </svg>
+                </button>
+            </div>
+        </header>
+
+        <!-- 사용자별 할 일 목록 (가로 스크롤) -->
+        <div id="user-lanes-container" class="w-full overflow-x-auto pb-4">
+            <main id="user-lanes" class="flex space-x-6 min-w-max items-start">
+                <!-- 사용자별 세로 레인이 여기에 동적으로 생성됩니다. -->
+            </main>
+        </div>
+
+    </div>
+
+    <!-- 할 일 추가 모달 -->
+    <div id="add-todo-modal" class="modal-overlay fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center p-4 hidden">
+        <div class="bg-white rounded-xl shadow-2xl p-6 w-full max-w-md transform transition-transform duration-300 scale-95">
+            <h2 id="modal-title" class="text-2xl font-bold mb-4">새로운 할 일 추가</h2>
+            <form id="modal-form">
+                <input type="text" id="modal-input" placeholder="할 일을 입력하세요..." class="w-full px-4 py-2 bg-gray-100 border-2 border-transparent rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400 mb-4">
+                <div class="flex justify-end gap-3">
+                    <button type="button" id="modal-close-btn" class="px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300 transition">취소</button>
+                    <button type="submit" class="px-4 py-2 bg-indigo-500 text-white font-semibold rounded-lg hover:bg-indigo-600 transition">추가</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 확인 모달 (초기화 및 삭제 공용) -->
+    <div id="confirm-modal" class="modal-overlay fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center p-4 hidden">
+        <div class="bg-white rounded-xl shadow-2xl p-6 w-full max-w-md transform transition-transform duration-300 scale-95">
+            <h2 id="confirm-title" class="text-2xl font-bold mb-4 text-center">확인</h2>
+            <p id="confirm-message" class="text-center text-gray-600 mb-6 leading-relaxed"></p>
+            <div class="flex justify-center gap-4">
+                <button id="confirm-no-btn" class="px-8 py-2 bg-gray-200 rounded-lg hover:bg-gray-300 transition font-semibold">아니오</button>
+                <button id="confirm-yes-btn" class="px-8 py-2 bg-red-500 text-white font-semibold rounded-lg hover:bg-red-600 transition">예</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 사용자 추가/복원 모달 -->
+    <div id="manage-user-modal" class="modal-overlay fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center p-4 hidden">
+        <div class="bg-white rounded-xl shadow-2xl p-8 w-full max-w-lg transform transition-transform duration-300 scale-95">
+            <h2 class="text-2xl font-bold mb-6 text-center">사용자 관리</h2>
+            <div class="mb-6">
+                <h3 class="font-semibold mb-2 text-gray-700">비활성 사용자</h3>
+                <div id="inactive-user-list" class="space-y-2 max-h-40 overflow-y-auto border rounded-lg p-2 bg-gray-50"></div>
+            </div>
+            <div class="relative flex py-4 items-center">
+                <div class="flex-grow border-t border-gray-300"></div><span class="flex-shrink mx-4 text-gray-400 text-sm">또는</span><div class="flex-grow border-t border-gray-300"></div>
+            </div>
+            <div>
+                <h3 class="font-semibold mb-2 text-gray-700">새로운 사용자 추가</h3>
+                <form id="add-user-form" class="flex gap-2">
+                    <input type="text" id="new-user-name-input" placeholder="사용자 이름" class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400">
+                    <button type="submit" class="px-4 py-2 bg-indigo-500 text-white font-semibold rounded-lg hover:bg-indigo-600 transition">추가</button>
+                </form>
+            </div>
+            <button id="manage-user-close-btn" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600">
+                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+            </button>
+        </div>
+    </div>
+
+    <!-- 반복 요일 설정 모달 -->
+    <div id="recurring-modal" class="modal-overlay fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center p-4 hidden">
+        <div class="bg-white rounded-xl shadow-2xl p-6 w-full max-w-sm transform transition-transform duration-300 scale-95">
+            <h3 class="font-bold text-lg text-center mb-4">반복 요일 설정</h3>
+            <div id="day-checkboxes" class="grid grid-cols-4 gap-2 mb-6 text-center">
+                <!-- 요일 체크박스가 여기에 동적으로 생성됩니다 -->
+            </div>
+            <div class="flex justify-between gap-3">
+                <button id="unpin-btn" class="px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300 transition w-full">반복 해제</button>
+                <button id="save-recurring-btn" class="px-4 py-2 bg-indigo-500 text-white font-semibold rounded-lg hover:bg-indigo-600 transition w-full">저장</button>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Firebase SDK 추가 -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import { getFirestore, doc, setDoc, getDoc, onSnapshot, collection, query, where, getDocs, deleteDoc, writeBatch, updateDoc, orderBy } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCaTxx4I3--oJM3GVAWyxxrUoQ7ii_LuHY",
+            authDomain: "ippa-todo.firebaseapp.com",
+            projectId: "ippa-todo",
+            storageBucket: "ippa-todo.appspot.com",
+            messagingSenderId: "160562508293",
+            appId: "1:160562508293:web:5c7a03d0a7881b3323a26c",
+            measurementId: "G-FVC3VK9TB7"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        window.db = db;
+        window.firestoreFunctions = { doc, setDoc, getDoc, onSnapshot, collection, query, where, getDocs, deleteDoc, writeBatch, updateDoc, orderBy };
+
+        window.dispatchEvent(new CustomEvent('firebase-ready'));
+    </script>
+
+    <script>
+    window.addEventListener('firebase-ready', () => {
+        const { doc, setDoc, onSnapshot, collection, query, deleteDoc, writeBatch, updateDoc, getDocs, where, orderBy } = window.firestoreFunctions;
+        const db = window.db;
+
+        // DOM Elements
+        const datePicker = document.getElementById('date-picker');
+        const dayOfWeekEl = document.getElementById('day-of-week');
+        const prevDayBtn = document.getElementById('prev-day-btn');
+        const nextDayBtn = document.getElementById('next-day-btn');
+        const userLanesContainer = document.getElementById('user-lanes');
+        
+        const modal = document.getElementById('add-todo-modal');
+        const modalTitle = document.getElementById('modal-title');
+        const modalForm = document.getElementById('modal-form');
+        const modalInput = document.getElementById('modal-input');
+        const modalCloseBtn = document.getElementById('modal-close-btn');
+
+        const confirmModal = document.getElementById('confirm-modal');
+        const confirmTitle = document.getElementById('confirm-title');
+        const confirmMessage = document.getElementById('confirm-message');
+        const confirmYesBtn = document.getElementById('confirm-yes-btn');
+        const confirmNoBtn = document.getElementById('confirm-no-btn');
+        
+        const manageUserModal = document.getElementById('manage-user-modal');
+        const inactiveUserList = document.getElementById('inactive-user-list');
+        const addUserForm = document.getElementById('add-user-form');
+        const newUserNameInput = document.getElementById('new-user-name-input');
+        const manageUserCloseBtn = document.getElementById('manage-user-close-btn');
+
+        const recurringModal = document.getElementById('recurring-modal');
+        const dayCheckboxesContainer = document.getElementById('day-checkboxes');
+        const unpinBtn = document.getElementById('unpin-btn');
+        const saveRecurringBtn = document.getElementById('save-recurring-btn');
+
+        const pastelColors = ['bg-red-200', 'bg-orange-200', 'bg-amber-200', 'bg-yellow-200', 'bg-lime-200', 'bg-green-200', 'bg-emerald-200', 'bg-teal-200', 'bg-cyan-200', 'bg-sky-200', 'bg-blue-200', 'bg-indigo-200', 'bg-violet-200', 'bg-purple-200', 'bg-fuchsia-200', 'bg-pink-200', 'bg-rose-200'];
+        const daysOfWeek = [{label: '일', value: 0}, {label: '월', value: 1}, {label: '화', value: 2}, {label: '수', value: 3}, {label: '목', value: 4}, {label: '금', value: 5}, {label: '토', value: 6}];
+        
+        let activeUsers = [];
+        let inactiveUsers = [];
+        let allTodos = [];
+        let modalContext = {};
+        let confirmCallback = () => {};
+        let recurringTodoContext = null;
+
+        // --- 유틸리티 함수 ---
+        function getFormattedDate(date) {
+            const year = date.getFullYear();
+            const month = (date.getMonth() + 1).toString().padStart(2, '0');
+            const day = date.getDate().toString().padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+        function getDayOfWeek(dateString) {
+            const date = new Date(dateString + 'T00:00:00');
+            return daysOfWeek[date.getDay()].label;
+        }
+
+        // --- 렌더링 함수 ---
+        function render() {
+            const selectedDate = datePicker.value;
+            dayOfWeekEl.textContent = `(${getDayOfWeek(selectedDate)})`;
+            userLanesContainer.innerHTML = '';
+            const displayTodos = getTodosForDate(selectedDate);
+            activeUsers.forEach(user => userLanesContainer.appendChild(createUserLane(user, selectedDate, displayTodos)));
+            userLanesContainer.appendChild(createAddUserLane());
+        }
+        
+        function createUserLane(user, selectedDate, displayTodos) {
+            const lane = document.createElement('div');
+            lane.className = 'flex-shrink-0 w-80 bg-gray-100 rounded-xl p-4';
+            const userHeaderContainer = document.createElement('div');
+            userHeaderContainer.className = 'relative flex items-center justify-center mb-4 group';
+            const userHeader = document.createElement('h2');
+            userHeader.className = 'text-xl font-bold text-gray-700 user-name-header hover:bg-gray-200 px-2 py-1 rounded-md transition';
+            userHeader.textContent = user.name;
+            userHeader.onclick = () => editUserName(user, userHeader);
+            const userControls = document.createElement('div');
+            userControls.className = 'absolute right-0 flex items-center opacity-0 group-hover:opacity-100 transition-opacity';
+            const resetButton = document.createElement('button');
+            resetButton.className = 'text-gray-400 hover:text-blue-500 transition-colors p-1';
+            resetButton.title = `${user.name}의 할 일 초기화`;
+            resetButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M20 11a8.1 8.1 0 0 0 -15.5 -2m-.5 -4v4h4" /><path d="M4 13a8.1 8.1 0 0 0 15.5 2m.5 4v-4h-4" /></svg>`;
+            resetButton.onclick = () => showConfirmation('목록 초기화', `'${user.name}'의 고정되지 않은 할 일을 모두 삭제하시겠습니까?`, () => resetUserTasks(user.name, selectedDate));
+            const deactivateUserButton = document.createElement('button');
+            deactivateUserButton.className = 'text-gray-400 hover:text-red-500 transition-colors p-1';
+            deactivateUserButton.title = `${user.name} 사용자 비활성화`;
+            deactivateUserButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" /></svg>`;
+            deactivateUserButton.onclick = () => showConfirmation('사용자 비활성화', `'${user.name}' 사용자를 목록에서 숨깁니다. 데이터는 보존되며 나중에 복원할 수 있습니다. 계속하시겠습니까?`, () => deactivateUser(user));
+            userHeaderContainer.appendChild(userHeader);
+            userControls.appendChild(resetButton);
+            userControls.appendChild(deactivateUserButton);
+            userHeaderContainer.appendChild(userControls);
+            lane.appendChild(userHeaderContainer);
+            lane.appendChild(createPeriodSection('오전', 'am', user.name, selectedDate, displayTodos[user.name]?.am || []));
+            lane.appendChild(createPeriodSection('오후', 'pm', user.name, selectedDate, displayTodos[user.name]?.pm || []));
+            return lane;
+        }
+
+        function createAddUserLane() {
+            const addUserLane = document.createElement('div');
+            addUserLane.className = 'flex-shrink-0 w-80 flex items-center justify-center';
+            const addUserButton = document.createElement('button');
+            addUserButton.className = 'w-full h-full bg-gray-200 text-gray-500 hover:bg-indigo-100 hover:text-indigo-600 rounded-xl transition flex items-center justify-center p-4';
+            addUserButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" /></svg><span>사용자 관리</span>`;
+            addUserButton.onclick = openManageUserModal;
+            addUserLane.appendChild(addUserButton);
+            return addUserLane;
+        }
+        
+        function getTodosForDate(selectedDate) {
+            const dailyTasks = {};
+            activeUsers.forEach(user => dailyTasks[user.name] = { am: [], pm: [] });
+            const selectedDayOfWeek = new Date(selectedDate + 'T00:00:00').getDay();
+
+            allTodos.forEach(todo => {
+                const isRecurringToday = todo.recurringDays && todo.recurringDays.includes(selectedDayOfWeek);
+                const isOneTimeTaskToday = (!todo.recurringDays || todo.recurringDays.length === 0) && todo.date === selectedDate;
+
+                if (isRecurringToday || isOneTimeTaskToday) {
+                    const displayTodo = { ...todo };
+                    displayTodo.completed = todo.completions?.[selectedDate] || false;
+                    if(dailyTasks[displayTodo.user]) {
+                        dailyTasks[displayTodo.user][displayTodo.period].push(displayTodo);
+                    }
+                }
+            });
+            return dailyTasks;
+        }
+
+        function createPeriodSection(title, period, user, date, taskItems) {
+            const section = document.createElement('div');
+            section.className = 'mb-4';
+            const header = document.createElement('div');
+            header.className = 'flex justify-between items-center mb-2';
+            const sectionTitle = document.createElement('h3');
+            sectionTitle.className = 'font-semibold text-gray-600';
+            sectionTitle.textContent = title;
+            const addButton = document.createElement('button');
+            addButton.className = 'w-7 h-7 bg-white rounded-full flex items-center justify-center text-gray-500 hover:bg-indigo-100 hover:text-indigo-600 transition shadow';
+            addButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" /></svg>`;
+            addButton.onclick = () => openModal(user, period, date);
+            header.appendChild(sectionTitle);
+            header.appendChild(addButton);
+            section.appendChild(header);
+            const taskList = document.createElement('div');
+            taskList.className = 'space-y-3';
+            if (taskItems.length > 0) {
+                taskItems.forEach(todo => taskList.appendChild(createTodoCard(todo)));
+            } else {
+                const emptyMsg = document.createElement('p');
+                emptyMsg.className = 'text-sm text-gray-400 px-2 py-4 text-center';
+                emptyMsg.textContent = '할 일이 없습니다.';
+                taskList.appendChild(emptyMsg);
+            }
+            section.appendChild(taskList);
+            return section;
+        }
+
+        function createTodoCard(todo) {
+            const card = document.createElement('div');
+            const colorIndex = (parseInt(todo.id.slice(-5), 16)) % pastelColors.length;
+            card.className = `p-3 rounded-lg shadow flex items-start gap-3 transition-all duration-300 task-card-enter ${pastelColors[colorIndex]} ${todo.completed ? 'opacity-60' : ''}`;
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.checked = todo.completed;
+            checkbox.className = 'mt-1 h-5 w-5 rounded border-gray-400 text-indigo-600 focus:ring-indigo-500 cursor-pointer';
+            checkbox.onchange = async () => {
+                const selectedDate = datePicker.value;
+                const completionPath = `completions.${selectedDate}`;
+                await updateDoc(doc(db, "todos", todo.id), { [completionPath]: !todo.completed });
+            };
+            const textWrapper = document.createElement('div');
+            textWrapper.className = 'flex-1';
+            const textElement = document.createElement('p');
+            textElement.textContent = todo.text;
+            textElement.className = `font-medium text-gray-800 break-words ${todo.completed ? 'line-through text-gray-600' : ''}`;
+            textWrapper.appendChild(textElement);
+            const controlsWrapper = document.createElement('div');
+            controlsWrapper.className = 'flex items-center gap-2';
+            const pinButton = document.createElement('button');
+            pinButton.className = 'text-gray-500 hover:text-indigo-600 transition-colors';
+            pinButton.innerHTML = (todo.recurringDays && todo.recurringDays.length > 0)
+                ? `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-indigo-600" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 2a2 2 0 00-2 2v2H7a2 2 0 00-2 2v8a2 2 0 002 2h6a2 2 0 002-2V8a2 2 0 00-2-2h-1V4a2 2 0 00-2-2zm-1 4V4a1 1 0 112 0v2H9z" clip-rule="evenodd" /></svg>` 
+                : `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>`;
+            pinButton.onclick = () => openRecurringModal(todo);
+            const deleteButton = document.createElement('button');
+            deleteButton.className = 'text-gray-500 hover:text-red-500 transition-colors';
+            deleteButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>`;
+            deleteButton.onclick = async () => await deleteDoc(doc(db, "todos", todo.id));
+            controlsWrapper.appendChild(pinButton);
+            controlsWrapper.appendChild(deleteButton);
+            card.appendChild(checkbox);
+            card.appendChild(textWrapper);
+            card.appendChild(controlsWrapper);
+            return card;
+        }
+
+        // --- 데이터 조작 함수 ---
+        async function createNewUser(name) {
+            const newUserRef = doc(collection(db, "users"));
+            await setDoc(newUserRef, { id: newUserRef.id, name, order: activeUsers.length + inactiveUsers.length, isActive: true });
+        }
+        async function deactivateUser(user) { await updateDoc(doc(db, "users", user.id), { isActive: false }); }
+        async function restoreUser(userId) { await updateDoc(doc(db, "users", userId), { isActive: true }); }
+        async function permanentlyDeleteUser(user) {
+            await deleteDoc(doc(db, "users", user.id));
+            const todosQuery = query(collection(db, "todos"), where("user", "==", user.name));
+            const todoSnapshot = await getDocs(todosQuery);
+            const batch = writeBatch(db);
+            todoSnapshot.forEach(todoDoc => batch.delete(todoDoc.ref));
+            await batch.commit();
+        }
+        async function resetUserTasks(user, date) {
+            const q = query(collection(db, "todos"), where("user", "==", user), where("date", "==", date), where("recurringDays", "==", []));
+            const querySnapshot = await getDocs(q);
+            const batch = writeBatch(db);
+            querySnapshot.forEach((doc) => batch.delete(doc.ref));
+            await batch.commit();
+        }
+        function editUserName(user, element) {
+            const oldName = user.name;
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.value = oldName;
+            input.className = 'text-xl font-bold text-gray-700 bg-white border-2 border-indigo-400 rounded-md text-center w-full';
+            element.replaceWith(input);
+            input.focus();
+            const saveName = async () => {
+                const newName = input.value.trim();
+                if (newName && newName !== oldName) {
+                    await updateDoc(doc(db, "users", user.id), { name: newName });
+                    const todosQuery = query(collection(db, "todos"), where("user", "==", oldName));
+                    const todoSnapshot = await getDocs(todosQuery);
+                    const batch = writeBatch(db);
+                    todoSnapshot.forEach(todoDoc => batch.update(todoDoc.ref, { user: newName }));
+                    await batch.commit();
+                }
+                 input.replaceWith(element);
+            };
+            input.addEventListener('blur', saveName);
+            input.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') input.blur();
+                else if (e.key === 'Escape') input.replaceWith(element);
+            });
+        }
+
+        // --- 모달 관리 ---
+        function openModal(user, period, date) {
+            modalContext = { user, period, date };
+            modalTitle.textContent = `${user} - ${period === 'am' ? '오전' : '오후'} 할 일 추가`;
+            modal.classList.remove('hidden');
+            setTimeout(() => modal.querySelector('.transform').classList.remove('scale-95'), 10);
+        }
+        function closeModal() {
+            modal.querySelector('.transform').classList.add('scale-95');
+            setTimeout(() => { modal.classList.add('hidden'); modalInput.value = ''; modalContext = {}; }, 300);
+        }
+        function showConfirmation(title, message, onConfirm) {
+            confirmTitle.textContent = title;
+            confirmMessage.innerHTML = message;
+            confirmCallback = onConfirm;
+            confirmModal.classList.remove('hidden');
+            setTimeout(() => confirmModal.querySelector('.transform').classList.remove('scale-95'), 10);
+        }
+        function closeConfirmModal() {
+            confirmModal.querySelector('.transform').classList.add('scale-95');
+            setTimeout(() => { confirmModal.classList.add('hidden'); confirmCallback = () => {}; }, 300);
+        }
+        function openManageUserModal() {
+            inactiveUserList.innerHTML = '';
+            if (inactiveUsers.length > 0) {
+                inactiveUsers.forEach(user => {
+                    const userEl = document.createElement('div');
+                    userEl.className = 'flex items-center justify-between p-2 rounded-md hover:bg-gray-100';
+                    userEl.innerHTML = `
+                        <span class="text-gray-800">${user.name}</span>
+                        <div class="flex gap-2">
+                            <button data-id="${user.id}" class="restore-btn px-3 py-1 text-sm bg-green-500 text-white rounded hover:bg-green-600">복원</button>
+                            <button data-user-name="${user.name}" data-user-id="${user.id}" class="delete-permanently-btn px-3 py-1 text-sm bg-red-500 text-white rounded hover:bg-red-600">영구 삭제</button>
+                        </div>
+                    `;
+                    inactiveUserList.appendChild(userEl);
+                });
+            } else {
+                inactiveUserList.innerHTML = `<p class="text-center text-gray-500">비활성화된 사용자가 없습니다.</p>`;
+            }
+            manageUserModal.classList.remove('hidden');
+            setTimeout(() => manageUserModal.querySelector('.transform').classList.remove('scale-95'), 10);
+        }
+        function closeManageUserModal() {
+            manageUserModal.querySelector('.transform').classList.add('scale-95');
+            setTimeout(() => manageUserModal.classList.add('hidden'), 300);
+        }
+        function openRecurringModal(todo) {
+            recurringTodoContext = todo;
+            dayCheckboxesContainer.innerHTML = '';
+            daysOfWeek.forEach(day => {
+                const isChecked = todo.recurringDays?.includes(day.value);
+                const label = document.createElement('label');
+                label.className = `p-2 rounded-md border-2 cursor-pointer ${isChecked ? 'bg-indigo-500 border-indigo-500 text-white' : 'bg-white border-gray-300'}`;
+                label.innerHTML = `<input type="checkbox" value="${day.value}" class="sr-only" ${isChecked ? 'checked' : ''}><span>${day.label}</span>`;
+                dayCheckboxesContainer.appendChild(label);
+            });
+            recurringModal.classList.remove('hidden');
+            setTimeout(() => recurringModal.querySelector('.transform').classList.remove('scale-95'), 10);
+        }
+        function closeRecurringModal() {
+            recurringModal.querySelector('.transform').classList.add('scale-95');
+            setTimeout(() => { recurringModal.classList.add('hidden'); recurringTodoContext = null; }, 300);
+        }
+
+        // --- 이벤트 리스너 ---
+        function changeDate(days) {
+            const currentDate = new Date(datePicker.value + 'T00:00:00');
+            currentDate.setDate(currentDate.getDate() + days);
+            datePicker.value = getFormattedDate(currentDate);
+            render();
+        }
+        datePicker.addEventListener('change', render);
+        prevDayBtn.addEventListener('click', () => changeDate(-1));
+        nextDayBtn.addEventListener('click', () => changeDate(1));
+        modalForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const text = modalInput.value.trim();
+            if (text === '') return;
+            const { user, period, date } = modalContext;
+            const newTodoRef = doc(collection(db, "todos"));
+            await setDoc(newTodoRef, { id: newTodoRef.id, text, date, user, period, completed: false, recurringDays: [], completions: {} });
+            closeModal();
+        });
+        modalCloseBtn.addEventListener('click', closeModal);
+        modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
+        confirmYesBtn.addEventListener('click', () => { confirmCallback(); closeConfirmModal(); });
+        confirmNoBtn.addEventListener('click', closeConfirmModal);
+        confirmModal.addEventListener('click', (e) => { if (e.target === confirmModal) closeConfirmModal(); });
+        addUserForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const newName = newUserNameInput.value.trim();
+            if (newName) {
+                await createNewUser(newName);
+                newUserNameInput.value = '';
+                closeManageUserModal();
+            }
+        });
+        inactiveUserList.addEventListener('click', async (e) => {
+            if (e.target.classList.contains('restore-btn')) {
+                await restoreUser(e.target.dataset.id);
+                closeManageUserModal();
+            }
+            if (e.target.classList.contains('delete-permanently-btn')) {
+                const user = { id: e.target.dataset.userId, name: e.target.dataset.userName };
+                closeManageUserModal();
+                showConfirmation('사용자 영구 삭제', `<strong class="text-red-600">'${user.name}' 사용자와 관련된 모든 할 일 데이터가 영구적으로 삭제됩니다. 이 작업은 되돌릴 수 없습니다.</strong><br><br>정말로 삭제하시겠습니까?`, () => permanentlyDeleteUser(user));
+            }
+        });
+        manageUserCloseBtn.addEventListener('click', closeManageUserModal);
+        manageUserModal.addEventListener('click', (e) => { if (e.target === manageUserModal) closeManageUserModal(); });
+        
+        dayCheckboxesContainer.addEventListener('change', (e) => {
+            const checkbox = e.target;
+            if (checkbox.type === 'checkbox') {
+                const label = checkbox.closest('label');
+                if (label) {
+                    if (checkbox.checked) {
+                        label.classList.add('bg-indigo-500', 'border-indigo-500', 'text-white');
+                        label.classList.remove('bg-white', 'border-gray-300');
+                    } else {
+                        label.classList.remove('bg-indigo-500', 'border-indigo-500', 'text-white');
+                        label.classList.add('bg-white', 'border-gray-300');
+                    }
+                }
+            }
+        });
+
+        saveRecurringBtn.addEventListener('click', async () => {
+            const selectedDays = Array.from(dayCheckboxesContainer.querySelectorAll('input:checked')).map(input => parseInt(input.value));
+            await updateDoc(doc(db, "todos", recurringTodoContext.id), { recurringDays: selectedDays });
+            closeRecurringModal();
+        });
+        unpinBtn.addEventListener('click', async () => {
+            await updateDoc(doc(db, "todos", recurringTodoContext.id), { recurringDays: [] });
+            closeRecurringModal();
+        });
+
+        // --- 초기화 및 실시간 리스너 ---
+        async function initialize() {
+            const today = new Date();
+            datePicker.value = getFormattedDate(today);
+            onSnapshot(query(collection(db, "users"), orderBy("order")), (snapshot) => {
+                const allUsers = snapshot.docs.map(doc => doc.data());
+                activeUsers = allUsers.filter(u => u.isActive);
+                inactiveUsers = allUsers.filter(u => !u.isActive);
+                render();
+            });
+            onSnapshot(query(collection(db, "todos")), (snapshot) => {
+                allTodos = snapshot.docs.map(doc => doc.data());
+                render();
+            });
+        }
+
+        initialize();
+    });
+    </script>
+
+</body>
+</html>
