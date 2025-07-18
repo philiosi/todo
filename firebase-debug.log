@@ -1,0 +1,119 @@
+[debug] [2025-07-18T15:20:55.015Z] ----------------------------------------------------------------------
+[debug] [2025-07-18T15:20:55.017Z] Command:       /opt/homebrew/Cellar/node/24.4.1/bin/node /opt/homebrew/bin/firebase init
+[debug] [2025-07-18T15:20:55.017Z] CLI Version:   14.11.0
+[debug] [2025-07-18T15:20:55.017Z] Platform:      darwin
+[debug] [2025-07-18T15:20:55.017Z] Node Version:  v24.4.1
+[debug] [2025-07-18T15:20:55.017Z] Time:          Sat Jul 19 2025 00:20:55 GMT+0900 (대한민국 표준시)
+[debug] [2025-07-18T15:20:55.017Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2025-07-18T15:20:55.019Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2025-07-18T15:20:55.020Z] > authorizing via signed-in user (philiosnaz@gmail.com)
+[info] 
+     ######## #### ########  ######## ########     ###     ######  ########
+     ##        ##  ##     ## ##       ##     ##  ##   ##  ##       ##
+     ######    ##  ########  ######   ########  #########  ######  ######
+     ##        ##  ##    ##  ##       ##     ## ##     ##       ## ##
+     ##       #### ##     ## ######## ########  ##     ##  ######  ########
+
+You're about to initialize a Firebase project in this directory:
+
+  /Users/philiosi/dev/todo
+
+[info] 
+=== Project Setup
+[info] 
+[info] First, let's associate this project directory with a Firebase project.
+[info] You can create multiple project aliases by running firebase use --add, 
+[info] but for now we'll just set up a default project.
+[info] 
+[debug] [2025-07-18T15:21:53.776Z] Checked if tokens are valid: true, expires at: 1752854951539
+[debug] [2025-07-18T15:21:53.777Z] Checked if tokens are valid: true, expires at: 1752854951539
+[debug] [2025-07-18T15:21:53.779Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects pageSize=100
+[debug] [2025-07-18T15:21:54.437Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects 200
+[debug] [2025-07-18T15:21:54.437Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects [omitted]
+[info] i  Using project ippa-todo (ippa-todo) 
+[info] 
+=== Firestore Setup
+[info] i  firestore: ensuring required API firestore.googleapis.com is enabled... 
+[debug] [2025-07-18T15:22:03.102Z] Checked if tokens are valid: true, expires at: 1752854951539
+[debug] [2025-07-18T15:22:03.102Z] Checked if tokens are valid: true, expires at: 1752854951539
+[debug] [2025-07-18T15:22:03.102Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/ippa-todo/services/firestore.googleapis.com [none]
+[debug] [2025-07-18T15:22:03.102Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/ippa-todo/services/firestore.googleapis.com x-goog-quota-user=projects/ippa-todo
+[debug] [2025-07-18T15:22:03.673Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/ippa-todo/services/firestore.googleapis.com 200
+[debug] [2025-07-18T15:22:03.673Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/ippa-todo/services/firestore.googleapis.com [omitted]
+[info] ✔  firestore: required API firestore.googleapis.com is enabled 
+[debug] [2025-07-18T15:22:03.685Z] Checked if tokens are valid: true, expires at: 1752854951539
+[debug] [2025-07-18T15:22:03.685Z] Checked if tokens are valid: true, expires at: 1752854951539
+[debug] [2025-07-18T15:22:03.685Z] >>> [apiv2][query] GET https://firestore.googleapis.com/v1/projects/ippa-todo/databases [none]
+[debug] [2025-07-18T15:22:04.477Z] <<< [apiv2][status] GET https://firestore.googleapis.com/v1/projects/ippa-todo/databases 200
+[debug] [2025-07-18T15:22:04.477Z] <<< [apiv2][body] GET https://firestore.googleapis.com/v1/projects/ippa-todo/databases {"databases":[{"name":"projects/ippa-todo/databases/(default)","uid":"bcc9eaa0-8ed9-44bb-a608-f75c8e634541","createTime":"2025-07-18T06:38:21.637645Z","updateTime":"2025-07-18T06:38:21.637645Z","locationId":"nam5","type":"FIRESTORE_NATIVE","concurrencyMode":"PESSIMISTIC","versionRetentionPeriod":"3600s","earliestVersionTime":"2025-07-18T14:22:04.533983Z","appEngineIntegrationMode":"DISABLED","keyPrefix":"s","pointInTimeRecoveryEnablement":"POINT_IN_TIME_RECOVERY_DISABLED","deleteProtectionState":"DELETE_PROTECTION_DISABLED","databaseEdition":"STANDARD","freeTier":true,"etag":"IPW62IHbxo4DMNCp2qXmxY4D"}]}
+[info] 
+[info] Firestore Security Rules allow you to define how and when to allow
+[info] requests. You can keep these rules in your project directory
+[info] and publish them with firebase deploy.
+[info] 
+[debug] [2025-07-18T15:22:30.624Z] Checked if tokens are valid: true, expires at: 1752854951539
+[debug] [2025-07-18T15:22:30.625Z] Checked if tokens are valid: true, expires at: 1752854951539
+[debug] [2025-07-18T15:22:30.625Z] >>> [apiv2][query] GET https://firebaserules.googleapis.com/v1/projects/ippa-todo/releases pageSize=10&pageToken=
+[debug] [2025-07-18T15:22:32.036Z] <<< [apiv2][status] GET https://firebaserules.googleapis.com/v1/projects/ippa-todo/releases 200
+[debug] [2025-07-18T15:22:32.037Z] <<< [apiv2][body] GET https://firebaserules.googleapis.com/v1/projects/ippa-todo/releases {"releases":[{"name":"projects/ippa-todo/releases/cloud.firestore","rulesetName":"projects/ippa-todo/rulesets/fdf67e49-9de9-4a0e-805c-126309b77f99","createTime":"2025-07-18T06:38:27.304658Z","updateTime":"2025-07-18T06:40:59.319768Z"}]}
+[debug] [2025-07-18T15:22:32.037Z] Checked if tokens are valid: true, expires at: 1752854951539
+[debug] [2025-07-18T15:22:32.037Z] Checked if tokens are valid: true, expires at: 1752854951539
+[debug] [2025-07-18T15:22:32.038Z] >>> [apiv2][query] GET https://firebaserules.googleapis.com/v1/projects/ippa-todo/rulesets/fdf67e49-9de9-4a0e-805c-126309b77f99 [none]
+[debug] [2025-07-18T15:22:32.343Z] <<< [apiv2][status] GET https://firebaserules.googleapis.com/v1/projects/ippa-todo/rulesets/fdf67e49-9de9-4a0e-805c-126309b77f99 200
+[debug] [2025-07-18T15:22:32.343Z] <<< [apiv2][body] GET https://firebaserules.googleapis.com/v1/projects/ippa-todo/rulesets/fdf67e49-9de9-4a0e-805c-126309b77f99 [omitted]
+[info] i  Downloaded the existing Firestore Security Rules from the Firebase console 
+[info] 
+[info] Firestore indexes allow you to perform complex queries while
+[info] maintaining performance that scales with the size of the result
+[info] set. You can keep index definitions in your project directory
+[info] and publish them with firebase deploy.
+[info] 
+[debug] [2025-07-18T15:22:36.599Z] Checked if tokens are valid: true, expires at: 1752854951539
+[debug] [2025-07-18T15:22:36.599Z] Checked if tokens are valid: true, expires at: 1752854951539
+[debug] [2025-07-18T15:22:36.599Z] Checked if tokens are valid: true, expires at: 1752854951539
+[debug] [2025-07-18T15:22:36.599Z] Checked if tokens are valid: true, expires at: 1752854951539
+[debug] [2025-07-18T15:22:36.599Z] >>> [apiv2][query] GET https://firestore.googleapis.com/v1/projects/ippa-todo/databases/(default)/collectionGroups/-/indexes [none]
+[debug] [2025-07-18T15:22:36.600Z] >>> [apiv2][query] GET https://firestore.googleapis.com/v1/projects/ippa-todo/databases/(default)/collectionGroups/-/fields?filter=indexConfig.usesAncestorConfig=false OR ttlConfig:* [none]
+[debug] [2025-07-18T15:22:37.772Z] <<< [apiv2][status] GET https://firestore.googleapis.com/v1/projects/ippa-todo/databases/(default)/collectionGroups/-/indexes 200
+[debug] [2025-07-18T15:22:37.773Z] <<< [apiv2][body] GET https://firestore.googleapis.com/v1/projects/ippa-todo/databases/(default)/collectionGroups/-/indexes {}
+[debug] [2025-07-18T15:22:37.773Z] <<< [apiv2][status] GET https://firestore.googleapis.com/v1/projects/ippa-todo/databases/(default)/collectionGroups/-/fields?filter=indexConfig.usesAncestorConfig=false OR ttlConfig:* 200
+[debug] [2025-07-18T15:22:37.773Z] <<< [apiv2][body] GET https://firestore.googleapis.com/v1/projects/ippa-todo/databases/(default)/collectionGroups/-/fields?filter=indexConfig.usesAncestorConfig=false OR ttlConfig:* {"fields":[{"name":"projects/ippa-todo/databases/(default)/collectionGroups/__default__/fields/*","indexConfig":{"indexes":[{"queryScope":"COLLECTION","fields":[{"fieldPath":"*","order":"ASCENDING"}],"state":"READY"},{"queryScope":"COLLECTION","fields":[{"fieldPath":"*","order":"DESCENDING"}],"state":"READY"},{"queryScope":"COLLECTION","fields":[{"fieldPath":"*","arrayConfig":"CONTAINS"}],"state":"READY"}]}}]}
+[info] i  Downloaded the existing Firestore indexes from the Firebase console 
+[info] ✔  Wrote firestore.rules 
+[info] ✔  Wrote firestore.indexes.json 
+[info] 
+=== Hosting Setup
+[debug] [2025-07-18T15:22:37.777Z] Checked if tokens are valid: true, expires at: 1752854951539
+[debug] [2025-07-18T15:22:37.777Z] Checked if tokens are valid: true, expires at: 1752854951539
+[debug] [2025-07-18T15:22:37.777Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/ippa-todo [none]
+[debug] [2025-07-18T15:22:38.193Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/ippa-todo 200
+[debug] [2025-07-18T15:22:38.194Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/ippa-todo {"projectId":"ippa-todo","projectNumber":"160562508293","displayName":"ippa-todo","name":"projects/ippa-todo","resources":{"hostingSite":"ippa-todo"},"state":"ACTIVE","etag":"1_2e98eb5a-1e8f-4c79-b224-18e131a5d0bf"}
+[info] 
+[info] Your public directory is the folder (relative to your project directory) that
+[info] will contain Hosting assets to be uploaded with firebase deploy. If you
+[info] have a build process for your assets, use your build's output directory.
+[info] 
+[info] ✔  Wrote public/404.html 
+[debug] [2025-07-18T15:24:08.690Z] >>> [apiv2][query] GET https://www.gstatic.com/firebasejs/releases.json [none]
+[debug] [2025-07-18T15:24:08.867Z] <<< [apiv2][status] GET https://www.gstatic.com/firebasejs/releases.json 200
+[debug] [2025-07-18T15:24:08.867Z] <<< [apiv2][body] GET https://www.gstatic.com/firebasejs/releases.json {"current":{"version":"12.0.0","browserURL":"https://www.gstatic.com/firebasejs/12.0.0/firebase.js","packageURL":"https://www.gstatic.com/firebasejs/12.0.0/firebase.tgz"},"live":{"version":"12.0","browserURL":"https://www.gstatic.com/firebasejs/live/12.0/firebase.js","packageURL":"https://www.gstatic.com/firebasejs/live/12.0/firebase.tgz"},"components":{"ai":"https://www.gstatic.com/firebasejs/12.0.0/firebase-ai.js","analytics":"https://www.gstatic.com/firebasejs/12.0.0/firebase-analytics.js","app":"https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js","app-check":"https://www.gstatic.com/firebasejs/12.0.0/firebase-app-check.js","auth":"https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js","auth/cordova":"https://www.gstatic.com/firebasejs/12.0.0/firebase-auth/cordova.js","auth/web-extension":"https://www.gstatic.com/firebasejs/12.0.0/firebase-auth/web-extension.js","functions":"https://www.gstatic.com/firebasejs/12.0.0/firebase-functions.js","firestore":"https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js","firestore/lite":"https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore/lite.js","installations":"https://www.gstatic.com/firebasejs/12.0.0/firebase-installations.js","storage":"https://www.gstatic.com/firebasejs/12.0.0/firebase-storage.js","performance":"https://www.gstatic.com/firebasejs/12.0.0/firebase-performance.js","remote-config":"https://www.gstatic.com/firebasejs/12.0.0/firebase-remote-config.js","messaging":"https://www.gstatic.com/firebasejs/12.0.0/firebase-messaging.js","messaging/sw":"https://www.gstatic.com/firebasejs/12.0.0/firebase-messaging/sw.js","database":"https://www.gstatic.com/firebasejs/12.0.0/firebase-database.js","data-connect":"https://www.gstatic.com/firebasejs/12.0.0/firebase-data-connect.js","firestore.memory":"https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.memory.js"}}
+[info] ✔  Wrote public/index.html 
+[info] 
+[info] i  Detected a .git folder at /Users/philiosi/dev/todo 
+[info] i  Authorizing with GitHub to upload your service account to a GitHub repository's secrets store. 
+[info] 
+[info] Visit this URL on this device to log in:
+[info] https://github.com/login/oauth/authorize?client_id=89cf50f02ac6aaed3484&state=855235743&redirect_uri=http%3A%2F%2Flocalhost%3A9005&scope=read%3Auser%20repo%20public_repo
+[info] 
+[info] Waiting for authentication...
+[debug] [2025-07-18T15:24:14.096Z] >>> [apiv2][query] POST https://github.com/login/oauth/access_token [none]
+[debug] [2025-07-18T15:24:14.096Z] >>> [apiv2][body] POST https://github.com/login/oauth/access_token [stream]
+[debug] [2025-07-18T15:24:14.465Z] <<< [apiv2][status] POST https://github.com/login/oauth/access_token 200
+[debug] [2025-07-18T15:24:14.467Z] <<< [apiv2][body] POST https://github.com/login/oauth/access_token {"access_token":"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","token_type":"bearer","scope":"read:user,repo"}
+[debug] [2025-07-18T15:24:14.479Z] >>> [apiv2][query] GET https://api.github.com/user [none]
+[debug] [2025-07-18T15:24:14.848Z] <<< [apiv2][status] GET https://api.github.com/user 200
+[debug] [2025-07-18T15:24:14.848Z] <<< [apiv2][body] GET https://api.github.com/user {"login":"philiosi","id":6658980,"node_id":"MDQ6VXNlcjY2NTg5ODA=","avatar_url":"https://avatars.githubusercontent.com/u/6658980?v=4","gravatar_id":"","url":"https://api.github.com/users/philiosi","html_url":"https://github.com/philiosi","followers_url":"https://api.github.com/users/philiosi/followers","following_url":"https://api.github.com/users/philiosi/following{/other_user}","gists_url":"https://api.github.com/users/philiosi/gists{/gist_id}","starred_url":"https://api.github.com/users/philiosi/starred{/owner}{/repo}","subscriptions_url":"https://api.github.com/users/philiosi/subscriptions","organizations_url":"https://api.github.com/users/philiosi/orgs","repos_url":"https://api.github.com/users/philiosi/repos","events_url":"https://api.github.com/users/philiosi/events{/privacy}","received_events_url":"https://api.github.com/users/philiosi/received_events","type":"User","user_view_type":"private","site_admin":false,"name":"Sang-Ho Johan Na","company":null,"blog":"","location":null,"email":"philiosnaz@gmail.com","hireable":null,"bio":"KISTI\r\nGlobal Science experimental Data hub Center(GSDC)","twitter_username":null,"notification_email":"philiosnaz@gmail.com","public_repos":12,"public_gists":0,"followers":0,"following":0,"created_at":"2014-02-12T07:56:48Z","updated_at":"2025-07-18T14:12:23Z","private_gists":0,"total_private_repos":2,"owned_private_repos":2,"disk_usage":26563,"collaborators":0,"two_factor_authentication":true,"plan":{"name":"free","space":976562499,"collaborators":0,"private_repos":10000}}
+[info] 
+[info] ✔  Success! Logged into GitHub as philiosi 
+[info] 

@@ -1,89 +1,132 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Welcome to Firebase Hosting</title>
-
-    <!-- update the version number as needed -->
-    <script defer src="/__/firebase/12.0.0/firebase-app-compat.js"></script>
-    <!-- include only the Firebase features as you need -->
-    <script defer src="/__/firebase/12.0.0/firebase-auth-compat.js"></script>
-    <script defer src="/__/firebase/12.0.0/firebase-database-compat.js"></script>
-    <script defer src="/__/firebase/12.0.0/firebase-firestore-compat.js"></script>
-    <script defer src="/__/firebase/12.0.0/firebase-functions-compat.js"></script>
-    <script defer src="/__/firebase/12.0.0/firebase-messaging-compat.js"></script>
-    <script defer src="/__/firebase/12.0.0/firebase-storage-compat.js"></script>
-    <script defer src="/__/firebase/12.0.0/firebase-analytics-compat.js"></script>
-    <script defer src="/__/firebase/12.0.0/firebase-remote-config-compat.js"></script>
-    <script defer src="/__/firebase/12.0.0/firebase-performance-compat.js"></script>
-    <!-- 
-      initialize the SDK after all desired features are loaded, set useEmulator to false
-      to avoid connecting the SDK to running emulators.
-    -->
-    <script defer src="/__/firebase/init.js?useEmulator=true"></script>
-
-    <style media="screen">
-      body { background: #ECEFF1; color: rgba(0,0,0,0.87); font-family: Roboto, Helvetica, Arial, sans-serif; margin: 0; padding: 0; }
-      #message { background: white; max-width: 360px; margin: 100px auto 16px; padding: 32px 24px; border-radius: 3px; }
-      #message h2 { color: #ffa100; font-weight: bold; font-size: 16px; margin: 0 0 8px; }
-      #message h1 { font-size: 22px; font-weight: 300; color: rgba(0,0,0,0.6); margin: 0 0 16px;}
-      #message p { line-height: 140%; margin: 16px 0 24px; font-size: 14px; }
-      #message a { display: block; text-align: center; background: #039be5; text-transform: uppercase; text-decoration: none; color: white; padding: 16px; border-radius: 4px; }
-      #message, #message a { box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24); }
-      #load { color: rgba(0,0,0,0.4); text-align: center; font-size: 13px; }
-      @media (max-width: 600px) {
-        body, #message { margin-top: 0; background: white; box-shadow: none; }
-        body { border-top: 16px solid #ffa100; }
-      }
-    </style>
-  </head>
-  <body>
-    <div id="message">
-      <h2>Welcome</h2>
-      <h1>Firebase Hosting Setup Complete</h1>
-      <p>You're seeing this because you've successfully setup Firebase Hosting. Now it's time to go build something extraordinary!</p>
-      <a target="_blank" href="https://firebase.google.com/docs/hosting/">Open Hosting Documentation</a>
-    </div>
-    <p id="load">Firebase SDK Loading&hellip;</p>
-
-    <script>
-      document.addEventListener('DOMContentLoaded', function() {
-        const loadEl = document.querySelector('#load');
-        // // 🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥
-        // // The Firebase SDK is initialized and available here!
-        //
-        // firebase.auth().onAuthStateChanged(user => { });
-        // firebase.database().ref('/path/to/ref').on('value', snapshot => { });
-        // firebase.firestore().doc('/foo/bar').get().then(() => { });
-        // firebase.functions().httpsCallable('yourFunction')().then(() => { });
-        // firebase.messaging().requestPermission().then(() => { });
-        // firebase.storage().ref('/path/to/ref').getDownloadURL().then(() => { });
-        // firebase.analytics(); // call to activate
-        // firebase.analytics().logEvent('tutorial_completed');
-        // firebase.performance(); // call to activate
-        //
-        // // 🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥
-
-        try {
-          let app = firebase.app();
-          let features = [
-            'auth', 
-            'database', 
-            'firestore',
-            'functions',
-            'messaging', 
-            'storage', 
-            'analytics', 
-            'remoteConfig',
-            'performance',
-          ].filter(feature => typeof app[feature] === 'function');
-          loadEl.textContent = `Firebase SDK loaded with ${features.join(', ')}`;
-        } catch (e) {
-          console.error(e);
-          loadEl.textContent = 'Error loading the Firebase SDK, check the console.';
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IPPA 플래너 로그인</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
         }
-      });
+    </style>
+</head>
+<body class="bg-gray-50">
+
+    <div class="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-indigo-100 via-white to-sky-100 p-4">
+        
+        <div class="w-full max-w-sm">
+            <!-- 로고 및 타이틀 -->
+            <div class="text-center mb-8">
+                <h1 class="text-4xl font-bold text-indigo-600">IPPA 플래너</h1>
+                <p class="text-gray-500 mt-2">Google 계정으로 간편하게 시작하세요.</p>
+            </div>
+
+            <!-- 로그인 버튼 -->
+            <div class="bg-white p-8 rounded-2xl shadow-lg">
+                <div id="auth-container">
+                    <button 
+                        id="google-login-btn"
+                        class="w-full flex justify-center items-center gap-3 py-3 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-transform transform hover:scale-105"
+                    >
+                        <svg class="w-5 h-5" aria-hidden="true" focusable="false" data-prefix="fab" data-icon="google" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 488 512">
+                            <path fill="currentColor" d="M488 261.8C488 403.3 381.5 504 248 504 110.8 504 0 393.2 0 256S110.8 8 248 8c66.8 0 126 23.4 172.9 61.9l-69.5 69.5c-24.3-23.4-58.2-37.8-97.4-37.8-86.1 0-156.2 70.1-156.2 156.2s70.1 156.2 156.2 156.2c99.1 0 137.4-81.2 142.3-118.9H248v-85.3h236.1c2.3 12.7 3.9 24.9 3.9 41.4z"></path>
+                        </svg>
+                        <span>Google 계정으로 로그인</span>
+                    </button>
+                </div>
+                <div id="loading-spinner" class="hidden text-center">
+                    <p class="text-gray-600">로그인 중...</p>
+                </div>
+                 <div id="user-info" class="hidden text-center">
+                    <p id="user-message" class="text-gray-800 font-medium"></p>
+                    <button id="logout-btn" class="mt-4 text-sm text-indigo-600 hover:underline">로그아웃</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK 추가 -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+        import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCaTxx4I3--oJM3GVAWyxxrUoQ7ii_LuHY",
+            authDomain: "ippa-todo.firebaseapp.com",
+            projectId: "ippa-todo",
+            storageBucket: "ippa-todo.appspot.com",
+            messagingSenderId: "160562508293",
+            appId: "1:160562508293:web:5c7a03d0a7881b3323a26c",
+            measurementId: "G-FVC3VK9TB7"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const provider = new GoogleAuthProvider();
+
+        window.addEventListener('DOMContentLoaded', () => {
+            const googleLoginBtn = document.getElementById('google-login-btn');
+            const authContainer = document.getElementById('auth-container');
+            const loadingSpinner = document.getElementById('loading-spinner');
+            const userInfoDiv = document.getElementById('user-info');
+            const userMessage = document.getElementById('user-message');
+            const logoutBtn = document.getElementById('logout-btn');
+
+            function updateUI(user) {
+                if (user) {
+                    authContainer.classList.add('hidden');
+                    loadingSpinner.classList.add('hidden');
+                    userInfoDiv.classList.remove('hidden');
+                    userMessage.textContent = `${user.displayName}님, 환영합니다! 플래너로 이동합니다...`;
+                    setTimeout(() => { window.location.href = './planner.html'; }, 1500);
+                } else {
+                    authContainer.classList.remove('hidden');
+                    loadingSpinner.classList.add('hidden');
+                    userInfoDiv.classList.add('hidden');
+                }
+            }
+
+            googleLoginBtn.addEventListener('click', () => {
+                loadingSpinner.classList.remove('hidden');
+                authContainer.classList.add('hidden');
+                signInWithPopup(auth, provider).catch((error) => {
+                    console.error("로그인 팝업 오류:", error);
+                    if (error.code !== 'auth/popup-closed-by-user') {
+                         alert(`로그인에 실패했습니다: ${error.message}`);
+                    }
+                    updateUI(null);
+                });
+            });
+
+            logoutBtn.addEventListener('click', () => { signOut(auth); });
+
+            // [수정된 부분] 인증 상태 변경 시 DB에서 허용된 사용자인지 확인
+            onAuthStateChanged(auth, async (user) => {
+                if (user) {
+                    const userRef = doc(db, "allowedUsers", user.email);
+                    const userDoc = await getDoc(userRef);
+
+                    if (userDoc.exists()) {
+                        // 허용된 사용자
+                        updateUI(user);
+                    } else {
+                        // 허용되지 않은 사용자
+                        signOut(auth).then(() => {
+                            alert("접근이 허용되지 않은 계정입니다.");
+                            updateUI(null);
+                        });
+                    }
+                } else {
+                    // 로그아웃 상태
+                    updateUI(null);
+                }
+            });
+        });
     </script>
-  </body>
+
+</body>
 </html>
