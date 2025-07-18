@@ -56,6 +56,9 @@
         .sortable-drag {
             cursor: grabbing;
         }
+        .drag-handle {
+            cursor: grab;
+        }
     </style>
 </head>
 <body class="text-gray-800">
@@ -256,7 +259,6 @@
         const unpinBtn = document.getElementById('unpin-btn');
         const saveRecurringBtn = document.getElementById('save-recurring-btn');
 
-        // [추가된 부분] 프로필 관련 DOM 요소
         const profileButton = document.getElementById('profile-button');
         const profileDropdown = document.getElementById('profile-dropdown');
         const profileImage = document.getElementById('profile-image');
@@ -298,9 +300,15 @@
         
         function createUserLane(user, selectedDate, displayTodos) {
             const lane = document.createElement('div');
-            lane.className = 'flex-shrink-0 w-80 bg-gray-100 rounded-xl p-4';
+            lane.className = 'relative flex-shrink-0 w-80 bg-gray-100 rounded-xl p-4'; // relative 추가
             lane.dataset.userId = user.id;
             
+            // [수정된 부분] 드래그 핸들 추가
+            const dragHandle = document.createElement('div');
+            dragHandle.className = 'drag-handle absolute top-3 left-3 text-gray-400 p-1 cursor-grab';
+            dragHandle.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" /></svg>`;
+            lane.appendChild(dragHandle);
+
             const userHeaderContainer = document.createElement('div');
             userHeaderContainer.className = 'relative flex items-center justify-center mb-4 group';
             const userHeader = document.createElement('h2');
@@ -587,9 +595,7 @@
             }
         });
         manageUserCloseBtn.addEventListener('click', closeManageUserModal);
-        
         manageUserBtn.addEventListener('click', openManageUserModal);
-        
         manageUserModal.addEventListener('click', (e) => { if (e.target === manageUserModal) closeManageUserModal(); });
         
         dayCheckboxesContainer.addEventListener('change', (e) => {
@@ -618,7 +624,6 @@
             closeRecurringModal();
         });
 
-        // [추가된 부분] 프로필 드롭다운 이벤트 리스너
         profileButton.addEventListener('click', (e) => {
             e.stopPropagation();
             profileDropdown.classList.toggle('hidden');
@@ -636,13 +641,14 @@
             const today = new Date();
             datePicker.value = getFormattedDate(today);
 
-            // 프로필 정보 설정
             profileImage.src = currentUser.photoURL || 'https://placehold.co/40x40/EFEFEF/333333?text=U';
             profileName.textContent = currentUser.displayName;
             profileEmail.textContent = currentUser.email;
             
+            // [수정된 부분] 드래그 핸들 설정
             new Sortable(userLanesContainer, {
                 animation: 150,
+                handle: '.drag-handle', // 이 클래스를 가진 요소만 드래그 가능
                 onEnd: async (evt) => {
                     const newOrderIds = Array.from(userLanesContainer.children).map(el => el.dataset.userId);
                     const batch = writeBatch(db);
