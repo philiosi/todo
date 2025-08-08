@@ -180,9 +180,30 @@
             <div id="day-checkboxes" class="grid grid-cols-4 gap-2 mb-6 text-center">
                 <!-- 요일 체크박스가 여기에 동적으로 생성됩니다 -->
             </div>
+            <div class="mb-4">
+                <label for="recurring-start" class="block text-sm text-gray-600 mb-1">시작 날짜</label>
+                <input type="date" id="recurring-start" class="w-full p-2 border rounded" />
+            </div>
+            <div class="mb-6">
+                <label for="recurring-end" class="block text-sm text-gray-600 mb-1">종료 날짜 (선택)</label>
+                <input type="date" id="recurring-end" class="w-full p-2 border rounded" />
+            </div>
             <div class="flex justify-between gap-3">
                 <button id="unpin-btn" class="px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300 transition w-full">반복 해제</button>
                 <button id="save-recurring-btn" class="px-4 py-2 bg-indigo-500 text-white font-semibold rounded-lg hover:bg-indigo-600 transition w-full">저장</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 반복 해제 옵션 모달 -->
+    <div id="unpin-modal" class="modal-overlay fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center p-4 hidden">
+        <div class="bg-white rounded-xl shadow-2xl p-6 w-full max-w-sm transform transition-transform duration-300 scale-95">
+            <h3 class="font-bold text-lg text-center mb-4">반복 해제</h3>
+            <p class="text-center text-gray-600 mb-6">현재 날짜만 삭제하거나 이후 반복을 중지할 수 있습니다.</p>
+            <div class="flex flex-col gap-3">
+                <button id="unpin-current-btn" class="px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300 transition w-full">현재 날짜만 삭제</button>
+                <button id="unpin-future-btn" class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition w-full">향후 반복 중지</button>
+                <button id="unpin-cancel-btn" class="px-4 py-2 bg-white border rounded-lg hover:bg-gray-100 transition w-full">취소</button>
             </div>
         </div>
     </div>
@@ -192,7 +213,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
         import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-        import { getFirestore, doc, setDoc, getDoc, onSnapshot, collection, query, where, getDocs, deleteDoc, writeBatch, updateDoc, orderBy } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+        import { getFirestore, doc, setDoc, getDoc, onSnapshot, collection, query, where, getDocs, deleteDoc, writeBatch, updateDoc, orderBy, arrayUnion } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyCaTxx4I3--oJM3GVAWyxxrUoQ7ii_LuHY",
@@ -260,6 +281,13 @@
         const dayCheckboxesContainer = document.getElementById('day-checkboxes');
         const unpinBtn = document.getElementById('unpin-btn');
         const saveRecurringBtn = document.getElementById('save-recurring-btn');
+        const recurringStartInput = document.getElementById('recurring-start');
+        const recurringEndInput = document.getElementById('recurring-end');
+
+        const unpinModal = document.getElementById('unpin-modal');
+        const unpinCurrentBtn = document.getElementById('unpin-current-btn');
+        const unpinFutureBtn = document.getElementById('unpin-future-btn');
+        const unpinCancelBtn = document.getElementById('unpin-cancel-btn');
 
         const profileButton = document.getElementById('profile-button');
         const profileDropdown = document.getElementById('profile-dropdown');
@@ -348,7 +376,10 @@
             const selectedDayOfWeek = new Date(selectedDate + 'T00:00:00').getDay();
 
             allTodos.forEach(todo => {
-                const isRecurringToday = todo.recurringDays && todo.recurringDays.length > 0 && todo.recurringDays.includes(selectedDayOfWeek);
+                const startOk = !todo.startDate || selectedDate >= todo.startDate;
+                const endOk = !todo.endDate || selectedDate <= todo.endDate;
+                const notSkipped = !todo.skipDates || !todo.skipDates.includes(selectedDate);
+                const isRecurringToday = todo.recurringDays && todo.recurringDays.length > 0 && todo.recurringDays.includes(selectedDayOfWeek) && startOk && endOk && notSkipped;
                 const isOneTimeTaskToday = (!todo.recurringDays || todo.recurringDays.length === 0) && todo.date === selectedDate;
 
                 if (isRecurringToday || isOneTimeTaskToday) {
@@ -547,6 +578,8 @@
                 label.innerHTML = `<input type="checkbox" value="${day.value}" class="sr-only" ${isChecked ? 'checked' : ''}><span>${day.label}</span>`;
                 dayCheckboxesContainer.appendChild(label);
             });
+            recurringStartInput.value = todo.startDate || todo.date;
+            recurringEndInput.value = todo.endDate || '';
             recurringModal.classList.remove('hidden');
             setTimeout(() => recurringModal.querySelector('.transform').classList.remove('scale-95'), 10);
         }
@@ -575,7 +608,7 @@
             if (text === '') return;
             const { user, period, date } = modalContext;
             const newTodoRef = doc(collection(db, "todos"));
-            await setDoc(newTodoRef, { id: newTodoRef.id, text, date, user, period, completed: false, recurringDays: [], completions: {} });
+            await setDoc(newTodoRef, { id: newTodoRef.id, text, date, user, period, completed: false, recurringDays: [], startDate: date, endDate: null, skipDates: [], completions: {} });
             closeModal();
         });
         modalCloseBtn.addEventListener('click', closeModal);
@@ -625,13 +658,35 @@
 
         saveRecurringBtn.addEventListener('click', async () => {
             const selectedDays = Array.from(dayCheckboxesContainer.querySelectorAll('input:checked')).map(input => parseInt(input.value));
-            await updateDoc(doc(db, "todos", recurringTodoContext.id), { recurringDays: selectedDays });
+            const startDate = recurringStartInput.value || recurringTodoContext.date;
+            const endDate = recurringEndInput.value || null;
+            await updateDoc(doc(db, "todos", recurringTodoContext.id), { recurringDays: selectedDays, startDate, endDate: endDate || null });
             closeRecurringModal();
         });
-        unpinBtn.addEventListener('click', async () => {
-            await updateDoc(doc(db, "todos", recurringTodoContext.id), { recurringDays: [] });
+        unpinBtn.addEventListener('click', openUnpinModal);
+
+        function openUnpinModal() {
+            unpinModal.classList.remove('hidden');
+            setTimeout(() => unpinModal.querySelector('.transform').classList.remove('scale-95'), 10);
+        }
+        function closeUnpinModal() {
+            unpinModal.querySelector('.transform').classList.add('scale-95');
+            setTimeout(() => unpinModal.classList.add('hidden'), 300);
+        }
+        unpinCurrentBtn.addEventListener('click', async () => {
+            const currentDate = datePicker.value;
+            await updateDoc(doc(db, "todos", recurringTodoContext.id), { skipDates: arrayUnion(currentDate) });
+            closeUnpinModal();
             closeRecurringModal();
         });
+        unpinFutureBtn.addEventListener('click', async () => {
+            const currentDate = datePicker.value;
+            await updateDoc(doc(db, "todos", recurringTodoContext.id), { endDate: currentDate });
+            closeUnpinModal();
+            closeRecurringModal();
+        });
+        unpinCancelBtn.addEventListener('click', closeUnpinModal);
+        unpinModal.addEventListener('click', (e) => { if (e.target === unpinModal) closeUnpinModal(); });
 
         profileButton.addEventListener('click', (e) => {
             e.stopPropagation();
